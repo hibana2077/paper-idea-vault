@@ -1,0 +1,62 @@
+services:
+  web:
+    build: ./st_web
+    ports:
+      - "80:80"
+    volumes:
+      - ./st_web:/app
+    environment:
+      BACKEND_SERVER: "http://backend:8081"
+      OLLAMA_SERVER: "http://ollama:11434"
+    depends_on:
+      - backend
+    networks:
+      - paper-idea-net
+
+  backend:
+    build: ./backend
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend:/app
+    environment:
+      HOST: "0.0.0.0"
+      LLM_PROVIDER: groq
+      LLM_MODEL: gemma2-9b-it
+      LLM_API_TOKEN: "your-api-token-here"
+      OLLAMA_SERVER: "http://ollama:11434"
+      REDIS_SERVER: "db"
+      REDIS_PORT: 6379
+    depends_on:
+      - db
+    networks:
+      - paper-idea-net
+
+  db:
+    restart: always
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis-data:/data
+    networks:
+      - paper-idea-net
+    
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    networks:
+      - paper-idea-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    volumes:
+      - ./ollama:/root/.ollama:rw
+
+networks:
+  paper-idea-net:
+    driver: bridge

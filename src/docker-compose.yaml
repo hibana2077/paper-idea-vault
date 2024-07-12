@@ -8,6 +8,9 @@ services:
     environment:
       BACKEND_SERVER: "http://backend:8081"
       OLLAMA_SERVER: "http://ollama:11434"
+      LLM_PROVIDER: groq # or "ollama"
+      LLM_MODEL: gemma2-9b-it # if LLM_PROVIDER is "ollama" then this should be the model name that available in the Ollama server
+      LLM_API_TOKEN: "your-api-token-here"
     depends_on:
       - backend
     networks:
@@ -21,9 +24,6 @@ services:
       - ./backend:/app
     environment:
       HOST: "0.0.0.0"
-      LLM_PROVIDER: groq
-      LLM_MODEL: gemma2-9b-it
-      LLM_API_TOKEN: "your-api-token-here"
       OLLAMA_SERVER: "http://ollama:11434"
       REDIS_SERVER: "db"
       REDIS_PORT: 6379

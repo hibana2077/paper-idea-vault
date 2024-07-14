@@ -6,6 +6,8 @@ services:
     volumes:
       - ./st_web:/app
     environment:
+      USER: "admin"
+      PASSWORD: "admin"
       BACKEND_SERVER: "http://backend:8081"
       OLLAMA_SERVER: "http://ollama:11434"
       LLM_PROVIDER: groq # or "ollama"

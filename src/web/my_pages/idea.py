@@ -3,7 +3,7 @@ import requests
 import time
 import os
 
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8081')
+BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
 
 @st.experimental_dialog('New Idea')
 def new_idea():
@@ -12,23 +12,22 @@ def new_idea():
         description = st.text_area('Description', key='description')
         tags = st.text_input('Tags', key='tags')
         if st.form_submit_button('Create Idea'):
-            response = requests.post(f'{BACKEND_URL}/new_idea', json={'title': title, 'description': description, 'tags': tags})
+            response = requests.post(f'http://{BACKEND_URL}/new_idea', json={'title': title, 'description': description, 'tags': tags})
             if response.status_code == 200:
-                st.experimental_dialog('Success', 'Idea created successfully')
+                st.success('Idea created')
             else:
-                st.experimental_dialog('Error', 'Failed to create idea')
+                st.error('Failed to create idea')
 
-def get_all_ideas():
+def get_all_ideas()->dict:
     response = requests.get(f'http://{BACKEND_URL}/ideas')
     if response.status_code == 200:
         return response.json()['ideas']
-    return []
+    return {}
 
 if "login" not in st.session_state:
     st.session_state.login = False
 
 if st.session_state.login:
-    st.write('Idea')
     idea_left_col, idea_right_col = st.columns([7,3],vertical_alignment='center')
 
     with idea_left_col:
@@ -41,10 +40,11 @@ if st.session_state.login:
     st.divider()
 
     ideas = get_all_ideas()
-    for idea in ideas:
+    for idea_key in ideas.keys():
         idea_card = st.container(border=True)
-        idea_card.title(idea['title'])
-        idea_card.write(f'Description: {idea["description"]}')
-        idea_card.write(f'Tags: {idea["tags"]}')
+        idea_card.subheader(ideas[idea_key]['title'])
+        idea_card.write(f"Description: {ideas[idea_key]['description']}")
+        idea_card.write(f"Tags: {ideas[idea_key]['tags']}")
+        
 else:
     st.write('Please login first')

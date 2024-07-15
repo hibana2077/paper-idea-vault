@@ -1,14 +1,14 @@
 services:
   web:
-    build: ./st_web
+    build: ./web
     ports:
       - "80:80"
     volumes:
-      - ./st_web:/app
+      - ./web:/app
     environment:
       USER: "admin"
       PASSWORD: "admin"
-      BACKEND_SERVER: "http://backend:8081"
+      BACKEND_SERVER: "backend:8081"
       OLLAMA_SERVER: "http://ollama:11434"
       LLM_PROVIDER: groq # or "ollama"
       LLM_MODEL: gemma2-9b-it # if LLM_PROVIDER is "ollama" then this should be the model name that available in the Ollama server
@@ -44,20 +44,20 @@ services:
     networks:
       - paper-idea-net
     
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    networks:
-      - paper-idea-net
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
-    volumes:
-      - ./ollama:/root/.ollama:rw
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   networks:
+  #     - paper-idea-net
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             capabilities: [gpu]
+  #   volumes:
+  #     - ./ollama:/root/.ollama:rw
 
 networks:
   paper-idea-net:

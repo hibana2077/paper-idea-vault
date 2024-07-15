@@ -164,3 +164,4 @@ cobot1_edit.7z
 cobot1_edit.py
 cobot1_test.py
 testing.png
+src/data/redis-data/dump.rdb

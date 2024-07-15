@@ -49,7 +49,7 @@ def read_root():
     return {"Hello": "World"}
 
 @app.post("/new_idea")
-def new_idea(title: str, description: str, tags: str):
+def new_idea(data:dict):
     """
     A function that handles the new_idea endpoint.
 
@@ -61,6 +61,9 @@ def new_idea(title: str, description: str, tags: str):
     Returns:
         dict: A dictionary with the message "Idea created".
     """
+    title = data["title"]
+    description = data["description"]
+    tags = data["tags"]
     idea_id = counter_db.incr("idea_counter")
     idea_db.hmset(idea_id, {"title": title, "description": description, "tags": tags})
     return {"status": "Idea created"}

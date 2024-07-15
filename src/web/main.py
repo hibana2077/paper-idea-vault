@@ -31,14 +31,14 @@ if "LLM_API_TOKEN" not in st.session_state:
 if st.session_state.login:
     pg.run()
 else:
-    with st.form(key='login'):
-        st.text_input('Username')
-        st.text_input('Password', type='password')
+    with st.form(key='login_form'):
+        username = st.text_input('Username')
+        password = st.text_input('Password', type='password')
         if st.form_submit_button('Login'):
-            if st.session_state.username == USER and st.session_state.password == PASSWORD:
+            if username == USER and password == PASSWORD:
                 st.success('Login successful')
                 st.session_state.login = True
                 time.sleep(1.2)
-                pg.run()
+                st.rerun()
             else:
                 st.error('Invalid username or password')

@@ -65,5 +65,18 @@ def new_idea(title: str, description: str, tags: str):
     idea_db.hmset(idea_id, {"title": title, "description": description, "tags": tags})
     return {"status": "Idea created"}
 
+@app.get("/ideas")
+def get_ideas():
+    """
+    A function that handles the ideas endpoint.
+
+    Returns:
+        dict: A dictionary with the ideas.
+    """
+    ideas = {}
+    for key in idea_db.keys():
+        ideas[key] = idea_db.hgetall(key)
+    return {"ideas": ideas}
+
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

@@ -1,11 +1,3 @@
-'''
-Author: hibana2077 hibana2077@gmail.com
-Date: 2024-05-06 21:09:40
-LastEditors: hibana2077 hibana2077@gmaill.com
-LastEditTime: 2024-06-13 15:49:11
-FilePath: \Digital-TA\src\backend\main.py
-Description: Here is the main file for the FastAPI server.
-'''
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings

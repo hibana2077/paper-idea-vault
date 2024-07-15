@@ -8,10 +8,15 @@ BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8081')
 @st.experimental_dialog('New Idea')
 def new_idea():
     with st.form(key='new_idea'):
-        st.text_input('Title', key='title')
-        st.text_area('Description', key='description')
-        # Need to add more fields here and submit to backend
-        
+        title = st.text_input('Title', key='title')
+        description = st.text_area('Description', key='description')
+        tags = st.text_input('Tags', key='tags')
+        if st.form_submit_button('Create Idea'):
+            response = requests.post(f'{BACKEND_URL}/new_idea', json={'title': title, 'description': description, 'tags': tags})
+            if response.status_code == 200:
+                st.experimental_dialog('Success', 'Idea created successfully')
+            else:
+                st.experimental_dialog('Error', 'Failed to create idea')
 
 st.title('Idea')
 

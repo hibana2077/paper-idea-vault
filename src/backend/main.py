@@ -20,6 +20,7 @@ embeddings = OllamaEmbeddings(base_url=ollama_server)
 
 counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
 user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
+idea_db = redis.Redis(host=redis_server, port=redis_port, db=2) # hash
 
 app = FastAPI()
 
@@ -46,6 +47,23 @@ def read_root():
         dict: A dictionary with the message "Hello: World".
     """
     return {"Hello": "World"}
+
+@app.post("/new_idea")
+def new_idea(title: str, description: str, tags: str):
+    """
+    A function that handles the new_idea endpoint.
+
+    Args:
+        title (str): The title of the idea.
+        description (str): The description of the idea.
+        tags (str): The tags of the idea.
+
+    Returns:
+        dict: A dictionary with the message "Idea created".
+    """
+    idea_id = counter_db.incr("idea_counter")
+    idea_db.hmset(idea_id, {"title": title, "description": description, "tags": tags})
+    return {"status": "Idea created"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

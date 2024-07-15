@@ -4,6 +4,10 @@ import streamlit as st
 
 USER = os.getenv('USER', 'user')
 PASSWORD = os.getenv('PASSWORD', 'password')
+BACKEND_SERVER = os.getenv('BACKEND_SERVER', 'http://localhost:8081')
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'groq')
+LLM_MODEL = os.getenv('LLM_MODEL', 'gemma2-9b-it')
+LLM_API_TOKEN = os.getenv('LLM_API_TOKEN', 'null')
 
 pg = st.navigation(
     [
@@ -14,6 +18,15 @@ pg = st.navigation(
 
 if "login" not in st.session_state:
     st.session_state.login = False
+
+if "LLM_PROVIDER" not in st.session_state:
+    st.session_state.LLM_PROVIDER = LLM_PROVIDER
+
+if "LLM_MODEL" not in st.session_state:
+    st.session_state.LLM_MODEL = LLM_MODEL
+
+if "LLM_API_TOKEN" not in st.session_state:
+    st.session_state.LLM_API_TOKEN = LLM_API_TOKEN
 
 if st.session_state.login:
     pg.run()

@@ -28,7 +28,7 @@ if "login" not in st.session_state:
     st.session_state.login = False
 
 if st.session_state.login:
-    idea_left_col, idea_right_col = st.columns([7,3],vertical_alignment='center')
+    idea_left_col, idea_right_col = st.columns([7,3],vertical_alignment="bottom")
 
     with idea_left_col:
         st.title('Idea')

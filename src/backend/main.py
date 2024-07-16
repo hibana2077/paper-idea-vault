@@ -1,7 +1,10 @@
 from langchain_community.vectorstores.faiss import FAISS
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
+from langchain_core.pydantic_v1 import BaseModel, Field
 from contextlib import asynccontextmanager
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
@@ -17,6 +20,10 @@ redis_server = os.getenv("REDIS_SERVER", "localhost")
 redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
+
+class Keywords(BaseModel):
+
+    keywords: list = Field(description="The keywords generated from the description")
 
 counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
 user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
@@ -88,11 +95,22 @@ def generate_keywords(data:dict):
 
     Args:
         description (str): The description of the idea.
+        api_key (str): The API key.
 
     Returns:
         dict: A dictionary with the keywords.
     """
     description = data["description"]
+    api_key = data['api_key']
+    chat = ChatGroq(
+    temperature=0,
+    model="gemma2-9b-it",
+    api_key="" # Optional if not set as an environment variable
+    )
+    structured_llm = chat.with_structured_output(Keywords)
+
+    out_put = structured_llm.invoke(f"Generate keywords from the description: {description}")
+    return out_put
 
 @app.get("/idea/{idea_id}")
 def get_idea(idea_id:int):

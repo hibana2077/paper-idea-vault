@@ -10,6 +10,10 @@ def generate_keywords(idea_id:int)->list:
     response = requests.get(f'http://{BACKEND_URL}/keywords/{idea_id}')
     if response.status_code == 200:
         idea_description = response.json()['description']
+        api_key = st.session_state.LLM_API_TOKEN
+        response = requests.post(f'http://{BACKEND_URL}/generate_keywords', json={'description': idea_description, 'api_key': api_key})
+        if response.status_code == 200:
+            return response.json()['keywords']
     return []
 
 def get_all_ideas()->dict:

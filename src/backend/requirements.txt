@@ -3,7 +3,6 @@ langchainhub
 langchain-community
 langchain-openai
 langchain-groq
-langchain_mistralai
 langchain-chroma
 faiss-cpu
 

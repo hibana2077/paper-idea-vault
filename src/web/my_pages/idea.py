@@ -42,9 +42,17 @@ if st.session_state.login:
     ideas = get_all_ideas()
     for idea_key in ideas.keys():
         idea_card = st.container(border=True)
-        idea_card.subheader(ideas[idea_key]['title'])
-        idea_card.write(f"Description: {ideas[idea_key]['description']}")
-        idea_card.write(f"Tags: {ideas[idea_key]['tags']}")
+        with idea_card:
+            idea_card_left_col, idea_card_right_col = st.columns([7,3],vertical_alignment="bottom")
+            
+            with idea_card_left_col:
+                st.subheader(ideas[idea_key]['title'])
+                st.write(f"Description: {ideas[idea_key]['description']}")
+                st.write(f"Tags: {ideas[idea_key]['tags']}")
+                st.write(f"Idea ID: {idea_key}")
+
+            with idea_card_right_col:
+                st.button('Details')
         
 else:
     st.write('Please login first')

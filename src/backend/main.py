@@ -16,7 +16,7 @@ ollama_server = os.getenv("OLLAMA_SERVER", "http://localhost:11434")
 redis_server = os.getenv("REDIS_SERVER", "localhost")
 redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
-embeddings = OllamaEmbeddings(base_url=ollama_server)
+# embeddings = OllamaEmbeddings(base_url=ollama_server)
 
 counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
 user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
@@ -80,6 +80,32 @@ def get_ideas():
     for key in idea_db.keys():
         ideas[key] = idea_db.hgetall(key)
     return {"ideas": ideas}
+
+@app.post("/generate_keywords")
+def generate_keywords(data:dict):
+    """
+    A function that handles the generate_keywords endpoint.
+
+    Args:
+        description (str): The description of the idea.
+
+    Returns:
+        dict: A dictionary with the keywords.
+    """
+    description = data["description"]
+
+@app.get("/idea/{idea_id}")
+def get_idea(idea_id:int):
+    """
+    A function that handles the idea endpoint.
+
+    Args:
+        idea_id (int): The idea ID.
+
+    Returns:
+        dict: A dictionary with the idea.
+    """
+    return idea_db.hgetall(idea_id)
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

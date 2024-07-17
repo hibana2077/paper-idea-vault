@@ -52,7 +52,7 @@ if st.session_state.login:
                 st.write(f"Idea ID: {idea_key}")
 
             with idea_card_right_col:
-                st.button('Details')
+                st.button('Details', key=f'details_{idea_key}')
         
 else:
     st.write('Please login first')

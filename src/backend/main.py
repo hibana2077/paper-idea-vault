@@ -8,6 +8,7 @@ from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
+import selfarxiv
 import redis
 import os
 import time
@@ -20,6 +21,14 @@ redis_server = os.getenv("REDIS_SERVER", "localhost")
 redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
+
+class Suggestions(BaseModel):
+
+    suggestions: list = Field(description="The suggestions of new paper topic from the related work")
+
+class RelatedWork(BaseModel):
+
+    is_related_work: bool = Field(description="Whether the summary is related to the description")
 
 class Keywords(BaseModel):
 
@@ -103,9 +112,9 @@ def generate_keywords(data:dict):
     description = data["description"]
     api_key = data['api_key']
     chat = ChatGroq(
-    temperature=0,
-    model="gemma2-9b-it",
-    api_key="" # Optional if not set as an environment variable
+        temperature=0,
+        model="gemma2-9b-it",
+        groq_api_key=api_key # Optional if not set as an environment variable
     )
     structured_llm = chat.with_structured_output(Keywords)
 
@@ -124,6 +133,72 @@ def get_idea(idea_id:int):
         dict: A dictionary with the idea.
     """
     return idea_db.hgetall(idea_id)
+
+@app.post('/related_work')
+def get_related_work(data:dict):
+    """
+    A function that handles the related_work endpoint.
+
+    Args:
+        keywords (list): The keywords.
+        description (str): The description of your idea.
+        api_key (str): The API key.
+
+    Returns:
+        dict: A dictionary with the related work.
+    """
+    keywords = data.get("keywords")
+    description = data.get("description")
+    api_key = data.get("api_key")
+
+    related = []
+
+    chat = ChatGroq(
+        temperature=0,
+        model="gemma2-9b-it",
+        groq_api_key=api_key # Optional if not set as an environment variable
+    )
+
+    # make keywords into a string
+    keywords_str = " ".join(keywords)
+
+    # get related work
+    related_works = selfarxiv.Search_paper(keywords_str)
+
+    for related_work in related_works:
+        structured_llm = chat.with_structured_output(RelatedWork)
+        out_put = structured_llm.invoke(f"Is the summary related to the description: {description}, summary: {related_work['summary']}")
+        print(f"Function name: get_related_work, out_put: {out_put}")
+        if out_put.is_related_work:
+            related.append(related_work)
+    
+    return {"related_work": related}
+
+@app.post("/suggest_topic")
+def suggest_topic(data:dict)->list[str]:
+    """
+    A function that handles the suggest_idea endpoint.
+
+    Args:
+        api_key (str): The API key.
+        related_works (list): The related works.
+
+    Returns:
+        list[str]: A list of suggestions.
+    """
+    api_key = data["api_key"]
+    related_works = data["related_works"]
+    chat = ChatGroq(
+        temperature=0,
+        model="mixtral-8x7b-32768",
+        groq_api_key=api_key # Optional if not set as an environment variable
+    )
+
+    related_works_str = "\n".join([f"{work['title']} {work['summary']}" for work in related_works])
+
+    structured_llm = chat.with_structured_output(Suggestions)
+    out_put = structured_llm.invoke(f"Generate a new paper topic based on the related works of a paper. Related works: {related_works_str}")
+    return out_put
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

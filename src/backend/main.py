@@ -22,14 +22,12 @@ redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
 
-class Suggestion(BaseModel):
-
-    topic: str = Field(description="The suggestion of a new paper topic from the related work")
-    details: str = Field(description="The details of the suggestion")
-
 class Suggestions(BaseModel):
 
-    suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
+    # suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
+    seggestion_A: str = Field(description="The suggestion of new paper topic A from the related work")
+    seggestion_B: str = Field(description="The suggestion of new paper topic B from the related work")
+    seggestion_C: str = Field(description="The suggestion of new paper topic C from the related work")
 
 class RelatedWork(BaseModel):
 
@@ -145,7 +143,7 @@ def get_related_work(data:dict):
     A function that handles the related_work endpoint.
 
     Args:
-        keywords (list): The keywords.
+        keywords (str): The keywords.
         description (str): The description of your idea.
         api_key (str): The API key.
 
@@ -165,25 +163,19 @@ def get_related_work(data:dict):
     )
 
     # make keywords into a string
-    keywords_str = " ".join(keywords)
+    keywords_str = " ".join(keywords.split(","))
+    print(f"Function name: get_related_work, keywords_str: {keywords_str}")
 
-    # get related work
-    related_works = []
-    start_list = [0,10,20]
-    for start in start_list:
-        related_works.extend(selfarxiv.Search_paper(keywords_str,start=start))
+    # get related works
+    related_works = selfarxiv.Search_paper(keywords_str)
 
     for related_work in related_works:
-        structured_llm = chat.with_structured_output(RelatedWork)
-        out_put = structured_llm.invoke(f"Is the summary related to the description: {description}, summary: {related_work['summary']}")
-        print(f"Function name: get_related_work, out_put: {out_put}")
-        if out_put.is_related_work:
-            related.append(related_work)
-    
+        related.append({'title': related_work['title'], 'summary': related_work['summary'], 'arxiv_id': related_work['arxiv_id'], 'authors': related_work['authors']})
+    print(f"Function name: get_related_work, related: {related}")
     return {"related_work": related}
 
 @app.post("/suggest_topic")
-def suggest_topic(data:dict)->list[str]:
+async def suggest_topic(data:dict):
     """
     A function that handles the suggest_idea endpoint.
 
@@ -192,8 +184,9 @@ def suggest_topic(data:dict)->list[str]:
         related_works (list): The related works.
 
     Returns:
-        list[str]: A list of suggestions.
+        list[str]: A list of dictionaries representing the suggestions of new paper topics from the related work.
     """
+    return_data = []
     api_key = data["api_key"]
     related_works = data["related_works"]
     chat = ChatGroq(
@@ -205,8 +198,12 @@ def suggest_topic(data:dict)->list[str]:
     related_works_str = "\n".join([f"{work['title']} {work['summary']}" for work in related_works])
 
     structured_llm = chat.with_structured_output(Suggestions)
-    out_put = structured_llm.invoke(f"Generate a new paper topic based on the related works of a paper. Related works: {related_works_str}")
-    return out_put
+    out_put = structured_llm.invoke(f"Generate a new paper topic based on the related works of a paper and must be new topic. Related works: {related_works_str}")
+    print(f"Function name: suggest_topic, out_put: {out_put}")
+    return_data.append(str(out_put.seggestion_A))
+    return_data.append(str(out_put.seggestion_B))
+    return_data.append(str(out_put.seggestion_C))
+    return {"suggestions": return_data}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

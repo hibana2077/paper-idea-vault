@@ -1,5 +1,5 @@
 import selfarxiv
-key_words = ["anguage models","rationales","token","text generation","model prediction","sampling algorithm","learnable tokens","thought","teacher forcin"]
+key_words = ["Knowledge Distillation","CNN","Semantic Segmentation"]
 
 keywords_str = " ".join(key_words)
 related_works = selfarxiv.Search_paper(keywords_str)

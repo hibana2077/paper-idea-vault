@@ -62,17 +62,18 @@ if st.session_state.login:
             idea_id = [idea_id for idea_id, idea in ideas.items() if idea['title'] == selected_idea][0]
             keywords = generate_keywords(idea_id)
             with st.form(key='edit_keywords'):
-                edited_keywords = st.text_area('Keywords', value=','.join(keywords)[1:-1], key='edited_keywords')
+                edited_keywords = st.text_area('Keywords', value=','.join(keywords)[1:], key='edited_keywords')
                 if st.form_submit_button('Search'):
+                    st.info(f"Keywords: {edited_keywords}")
                     # Call API
                     related_work = search_related_work(ideas[idea_id]['description'], edited_keywords, st.session_state.LLM_API_TOKEN)
                     st.session_state.related_work = related_work
                     st.success('Search completed')
             
         if 'related_work' in st.session_state:
-            related_work = st.session_state.related_work
+            related_work_from_session = st.session_state.related_work
             paper_left_col, paper_right_col = st.columns([3,3],vertical_alignment="bottom")
-            for idx, work in enumerate(related_work[:4]):
+            for idx, work in enumerate(related_work_from_session[:4]):
                 # display paper
                 with st.expander(f'Paper {idx+1}'):
                     st.write(f'Title: {work["title"]}')
@@ -80,10 +81,10 @@ if st.session_state.login:
                     st.write(f'Authors: {work["authors"][:5]}')
                     st.write(f'Arxiv ID: {work["arxiv_id"]}')
             if st.button('Suggest new paper topic', key='suggest_paper'):
-                suggested_topics = suggest_paper_topic(related_work[:4], st.session_state.LLM_API_TOKEN)
+                suggested_topics = suggest_paper_topic(related_work_from_session[:5], st.session_state.LLM_API_TOKEN)
                 st.markdown('### Suggested Topics')
                 for topic in suggested_topics:
-                    st.markdown(f'{topic}')
+                    st.markdown(f'- {topic}')
 
 
     with tab_paper_sketch:

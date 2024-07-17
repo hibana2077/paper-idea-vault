@@ -5,12 +5,12 @@ import xml.etree.ElementTree as ET
 base_url = 'http://export.arxiv.org/api/query?'
 
 # anguage models,rationales,token,text generation,model prediction,sampling algorithm,learnable tokens,thought,teacher forcin
-key_words = ["anguage models","rationales","token","text generation","model prediction","sampling algorithm","learnable tokens","thought","teacher forcin"]
+key_words = ["Knowledge Distillation","CNN","Semantic Segmentation"]
 
 # Set the search query parameters
-search_query = 'all:' + ' '.join(key_words)  # search for papers that contain any of the keywords
+search_query = 'cs:' + ' '.join(key_words)  # search for papers that contain any of the keywords
 start = 0                     # start at the first result
-max_results = 20              # return a maximum of 10 results
+max_results = 10              # return a maximum of 10 results
 
 # Construct the API request URL
 query = f'{base_url}search_query={search_query}&start={start}&max_results={max_results}'

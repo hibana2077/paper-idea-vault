@@ -7,7 +7,7 @@ langchain-chroma
 faiss-cpu
 
 python-dotenv
-
+fake-useragent
 transformers
 datasets
 pypdf

@@ -17,6 +17,8 @@ Function -> check idea is already implemented
 3. 搜索結果會是論文的 Abstract， 使用語言模型判斷是否與點子相關以及相似度。
 4. 返回相關的論文，並提供多個研究問題、假設和目標。
 
+或許可以考慮 單獨 keyword 與 summary 去產生新的 topic
+
 ### Function -> 論文主題的確定 [Idea Meansure]
 
 - 提供工具幫助使用者確定研究問題、假設和目標。

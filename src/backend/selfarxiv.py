@@ -1,4 +1,5 @@
 import requests
+from fake_useragent import UserAgent
 import xml.etree.ElementTree as ET
 
 # Set the API endpoint URL
@@ -18,13 +19,16 @@ def Search_paper(keywords:str,start=0) -> list[dict]:
             - 'arxiv_id': The arXiv ID of the paper.
             - 'authors': A list of authors of the paper.
     """
-    search_query = 'all:' + keywords
+    search_query = 'cs:' + keywords
     # all -> all fields
     # cs.AI -> Computer Science - Artificial Intelligence
     start = start
-    max_results = 30
+    max_results = 15
+    ua = UserAgent()
+    user_agent = ua.random
+    headers = {'user-agent': user_agent}
     query = f'{BASE_URL}search_query={search_query}&start={start}&max_results={max_results}'
-    response = requests.get(query)
+    response = requests.get(query, headers=headers)
     papers = []
     if response.status_code == 200:
         root = ET.fromstring(response.text)

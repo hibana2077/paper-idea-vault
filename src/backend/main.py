@@ -163,7 +163,10 @@ def get_related_work(data:dict):
     keywords_str = " ".join(keywords)
 
     # get related work
-    related_works = selfarxiv.Search_paper(keywords_str)
+    related_works = []
+    start_list = [0,10,20]
+    for start in start_list:
+        related_works.extend(selfarxiv.Search_paper(keywords_str,start=start))
 
     for related_work in related_works:
         structured_llm = chat.with_structured_output(RelatedWork)

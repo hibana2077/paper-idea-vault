@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 # Set the API endpoint URL
 BASE_URL = 'http://export.arxiv.org/api/query?'
 
-def Search_paper(keywords:str) -> list[dict]:
+def Search_paper(keywords:str,start=0) -> list[dict]:
     """
     Search for papers on arXiv based on the given keywords.
 
@@ -21,8 +21,8 @@ def Search_paper(keywords:str) -> list[dict]:
     search_query = 'all:' + keywords
     # all -> all fields
     # cs.AI -> Computer Science - Artificial Intelligence
-    start = 0
-    max_results = 20
+    start = start
+    max_results = 30
     query = f'{BASE_URL}search_query={search_query}&start={start}&max_results={max_results}'
     response = requests.get(query)
     papers = []

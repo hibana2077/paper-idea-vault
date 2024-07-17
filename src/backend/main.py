@@ -22,9 +22,14 @@ redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
 
+class Suggestion(BaseModel):
+
+    topic: str = Field(description="The suggestion of a new paper topic from the related work")
+    details: str = Field(description="The details of the suggestion")
+
 class Suggestions(BaseModel):
 
-    suggestions: list = Field(description="The suggestions of new paper topic from the related work")
+    suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
 
 class RelatedWork(BaseModel):
 

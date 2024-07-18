@@ -290,12 +290,16 @@ async def save_paper_sketch(data:dict):
 
     Returns:
     """
-    research_questions = data["Research_questions"]
-    hypotheses = data["Hypotheses"]
-    objectives_sketches = data["Objectives_sketches"]
+    paper_sketch = data['paper_sketch']
+    research_questions:list = paper_sketch["Research_questions"]
+    hypotheses:list = paper_sketch["Hypotheses"]
+    objectives_sketches:list = paper_sketch["Objectives_sketches"]
+    research_questions_str = "<block>".join([question['research_question'] for question in research_questions])
+    hypotheses_str = "<block>".join([hypothesis['hypothesis'] for hypothesis in hypotheses])
+    objectives_sketches_str = "<block>".join([objectives_sketch['objectives_sketch'] for objectives_sketch in objectives_sketches])
     paper_sketch_id = counter_db.incr("paper_sketch_counter")
-    paper_sketch_db.hmset(paper_sketch_id, {"research_questions": research_questions, "hypotheses": hypotheses, "objectives_sketches": objectives_sketches})
-    return {"status": "Paper Sketch saved"}
+    paper_sketch_db.hset(paper_sketch_id, {"research_questions": research_questions_str, "hypotheses": hypotheses_str, "objectives_sketches": objectives_sketches_str})
+    return {"status": "Paper sketch saved"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

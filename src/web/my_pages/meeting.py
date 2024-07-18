@@ -4,6 +4,12 @@ import os
 
 BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
 
+def save_paper_sketch(paper_sketch)->bool:
+    response = requests.post(f'http://{BACKEND_URL}/save_paper_sketch', json={'paper_sketch': paper_sketch})
+    if response.status_code == 200:
+        return True
+    return False
+
 def generate_paper_sketch(suggestion_title:str, suggestion:str, suggestion_detail:str, api_key:str)->str:
     response = requests.post(f'http://{BACKEND_URL}/generate_paper_sketch', json={'suggestion_title': suggestion_title, 'suggestion': suggestion, 'suggestion_detail': suggestion_detail, 'api_key': api_key})
     if response.status_code == 200:
@@ -141,6 +147,15 @@ if st.session_state.login:
         if 'generated_paper_sketch' in st.session_state:
             generated_paper_sketch = st.session_state.generated_paper_sketch
             st.json(generated_paper_sketch)
+            with st.form("Save paper sketch"):
+                name_of_paper_sketch = st.text_input('Name of Paper Sketch', key='name_of_paper_sketch')
+                save_button = st.form_submit_button('Save Paper Sketch')
+                if save_button:
+                    status = save_paper_sketch(generated_paper_sketch)
+                    if status:
+                        st.success('Paper Sketch saved')
+                    else:
+                        st.error('Failed to save Paper Sketch')
             
     with tab_exp_design:
         st.subheader('Experiment Design')

@@ -22,6 +22,21 @@ redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
 
+class ResearchQuestion(BaseModel):
+    research_question: str = Field(description="The research question")
+
+class Hypothesis(BaseModel):
+    hypothesis: str = Field(description="The hypothesis")
+
+class Objectives_sketch(BaseModel):
+    objectives_sketch: str = Field(description="The objectives sketch")
+
+class Sketch(BaseModel):
+
+    Research_questions:list[ResearchQuestion] = Field(description="The research questions")
+    Hypotheses:list[Hypothesis] = Field(description="The hypotheses")
+    Objectives_sketches:list[Objectives_sketch] = Field(description="The objectives sketches")
+
 class Suggestions(BaseModel):
 
     # suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
@@ -243,6 +258,29 @@ async def get_suggestions():
     for key in suggest_db.keys():
         suggestions[key] = suggest_db.hgetall(key)
     return {"suggestions": suggestions}
+
+@app.post("/generate_paper_sketch")
+async def generate_paper_sketch(data:dict):
+    """
+    A function that handles the generate_paper_sketch endpoint.
+
+    Args:
+
+    Returns:
+    """
+    suggest_title = data["suggestion_title"]
+    suggest = data["suggestion"]
+    suggest_detail = data["suggestion_detail"]
+    api_key = data["api_key"]
+    chat = ChatGroq(
+        temperature=0,
+        model="llama3-70b-8192",
+        groq_api_key=api_key
+    )
+
+    structured_llm = chat.with_structured_output(Sketch)
+    out_put = structured_llm.invoke(f"suggest title: {suggest_title}\n\nsuggest {suggest}\n\nsuggest detail {suggest_detail} Based on these, generate research questions, hypotheses, and objectives.")
+    return out_put
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

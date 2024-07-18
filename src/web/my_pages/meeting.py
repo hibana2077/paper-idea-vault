@@ -5,6 +5,12 @@ import os
 
 BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
 
+def generate_paper_sketch(suggestion_title:str, suggestion:str, suggestion_detail:str, api_key:str)->str:
+    response = requests.post(f'http://{BACKEND_URL}/generate_paper_sketch', json={'suggestion_title': suggestion_title, 'suggestion': suggestion, 'suggestion_detail': suggestion_detail, 'api_key': api_key})
+    if response.status_code == 200:
+        return response.json()
+    return {"error": "Failed to generate paper sketch"}
+
 def get_all_suggestions()->dict:
     response = requests.get(f'http://{BACKEND_URL}/suggestions')
     if response.status_code == 200:
@@ -94,31 +100,54 @@ if st.session_state.login:
                     st.write(f'Arxiv ID: {work["arxiv_id"]}')
             if st.button('Suggest new paper topic', key='suggest_paper'):
                 suggested_topics = suggest_paper_topic(related_work_from_session[:5], st.session_state.LLM_API_TOKEN)
-                st.markdown('### Suggested Topics')
-                for topic in suggested_topics:
-                    with st.expander(f'{topic["suggestion_title"]}'):
-                        st.markdown(f'### suggestion')
-                        st.markdown(f'{topic["suggestion"]}')
-                        st.markdown(f'### suggestion detail')
-                        st.markdown(f'{topic["suggestion_detail"]}')
-                        if st.button('Save this suggestion', key=f'save_{topic["suggestion_title"]}'):
-                            if save_suggestion(topic["suggestion_title"], topic["suggestion"], topic["suggestion_detail"]):
-                                st.success('Suggestion saved')
-                            else:
-                                st.error('Failed to save suggestion')
+                st.session_state.suggested_topics = suggested_topics
+        
+        if 'suggested_topics' in st.session_state:
+            suggested_topics = st.session_state.suggested_topics
+            st.markdown('### Suggested Topics')
+            for topic in suggested_topics:
+                with st.expander(f'{topic["suggestion_title"]}'):
+                    st.markdown(f'### suggestion')
+                    st.markdown(f'{topic["suggestion"]}')
+                    st.markdown(f'### suggestion detail')
+                    st.markdown(f'{topic["suggestion_detail"]}')
+            with st.form(key='save_suggestion'):
+                save_suggestion_title = st.selectbox('Select Suggestion', [topic['suggestion_title'] for topic in suggested_topics], key='save_suggestion_title')
+                sumbit_button = st.form_submit_button('Save Suggestion')
+                if sumbit_button:
+                    save_suggestion_dict = [topic for topic in suggested_topics if topic['suggestion_title'] == save_suggestion_title][0]
+                    status = save_suggestion(save_suggestion_dict['suggestion_title'], save_suggestion_dict['suggestion'], save_suggestion_dict['suggestion_detail'])
+                    if status:
+                        st.success('Suggestion saved')
+                    else:
+                        st.error('Failed to save suggestion')
 
     with tab_paper_sketch:
         st.subheader('Paper Sketch')
 
         # List all saved suggestions
         suggestions = get_all_suggestions()
-        selected_suggestion = st.selectbox('Select Suggestion', [suggestion['suggestion_title'] for suggestion in suggestions], key='selected_suggestion')
+        selected_suggestion = st.selectbox('Select Suggestion', [suggestions[key]['suggestion_title'] for key in suggestions.keys()], key='selected_suggestion')
 
         if selected_suggestion:
-            suggestion = [suggestion for suggestion in suggestions if suggestion['suggestion_title'] == selected_suggestion][0]
-            st.write(f'Suggestion: {suggestion["suggestion"]}')
-            st.write(f'Suggestion Detail: {suggestion["suggestion_detail"]}')
+            suggestion = [suggestions[key] for key in suggestions.keys() if suggestions[key]['suggestion_title'] == selected_suggestion][0]
+            # preview_card = st.container(border=True)
+            # with preview_card:
+            #     st.markdown(f'### Suggestion Title:\n{suggestion["suggestion_title"]}')
+            #     st.markdown(f'### Suggestion:\n{suggestion["suggestion"]}')
+            #     st.markdown(f'### Suggestion Detail:\n{suggestion["suggestion_detail"]}')
+            with st.form('generate_paper_sketch'):
+                edit_title = st.text_input('Title', value=suggestion['suggestion_title'], key='edit_title')
+                edit_suggestion = st.text_area('Suggestion', value=suggestion['suggestion'], key='edit_suggestion')
+                edit_suggestion_detail = st.text_area('Suggestion Detail', value=suggestion['suggestion_detail'], key='edit_suggestion_detail')
+                if st.form_submit_button('Generate Paper Sketch'):
+                    st.session_state.generated_paper_sketch = generate_paper_sketch(edit_title, edit_suggestion, edit_suggestion_detail, st.session_state.LLM_API_TOKEN)
+                    st.success('Paper Sketch generated')
 
+        if 'generated_paper_sketch' in st.session_state:
+            generated_paper_sketch = st.session_state.generated_paper_sketch
+            st.json(generated_paper_sketch)
+            
     with tab_exp_design:
         st.subheader('Experiment Design')
 

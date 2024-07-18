@@ -1,42 +1,49 @@
-from pprint import pprint
-import requests
+import urllib.request
+import urllib.parse
+import feedparser
+from datetime import datetime, timedelta
 
-def get_metadata(doi):
-    url = f'https://api.crossref.org/works/{doi}'
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        return response.json()['message']
-    else:
-        print(f'請求失敗,狀態碼: {response.status_code}')
-        return None
+def fetch_daily_papers(date):
+  base_url = 'http://export.arxiv.org/api/query?'
+  
+  # Format the date as required by arXiv API
+  date_str = date.strftime('%Y%m%d')
+  
+  # Create the query parameters
+  search_query = f'submittedDate:[{date_str}000000 TO {date_str}235959]'
+  params = {
+      'search_query': search_query,
+      'start': 0,
+      'max_results': 100  # Adjust as needed
+  }
+  
+  # Encode the parameters and create the full URL
+  query = urllib.parse.urlencode(params)
+  url = base_url + query
+  
+  # Fetch the results
+  with urllib.request.urlopen(url) as response:
+      parse = feedparser.parse(response.read())
+  
+  # Process and return the results
+  papers = []
+  for entry in parse.entries:
+      papers.append({
+          'title': entry.title,
+          'authors': [author.name for author in entry.authors],
+          'summary': entry.summary,
+          'link': entry.link
+      })
+  
+  return papers
 
-def search_works(query):
-    url = f'https://api.crossref.org/works?query={query}'
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        return response.json()['message']
-    else:
-        print(f'請求失敗,狀態碼: {response.status_code}')
-        return None
+# Example usage
+today = datetime.now()
+yesterday = today - timedelta(days=1)
+papers = fetch_daily_papers(yesterday)
 
-# 使用關鍵字搜索作品
-keyword = 'quantum computing and Convolutional Neural Networks'
-results = search_works(keyword)
-print(f'關鍵字: {keyword}')
-# dict_keys(['facets', 'total-results', 'items', 'items-per-page', 'query'])
-print(f'搜索到 {results["total-results"]} 筆作品')
-print('前 5 筆作品:')
-for item in results['items'][:5]:
-    if 'title' not in item:
-        continue
-    print(f'作品標題: {item["title"][0]}')
-    print(f'作品 DOI: {item["DOI"]}')
-    print(f'作品 URL: {item["URL"]}')
-    print('---')
-
-# # 根據 DOI 獲取元數據
-# doi = '10.1038/nature16961'
-# metadata = get_metadata(doi)
-# print(metadata)
+for paper in papers:
+  print(f"Title: {paper['title']}")
+  print(f"Authors: {', '.join(paper['authors'])}")
+  print(f"Link: {paper['link']}")
+  print("---")

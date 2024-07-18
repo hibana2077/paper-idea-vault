@@ -1,4 +1,5 @@
 import requests
+import time
 from fake_useragent import UserAgent
 import xml.etree.ElementTree as ET
 

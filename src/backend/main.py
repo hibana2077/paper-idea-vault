@@ -1,5 +1,4 @@
 from langchain_community.vectorstores.faiss import FAISS
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_core.pydantic_v1 import BaseModel, Field
 from contextlib import asynccontextmanager
@@ -11,7 +10,6 @@ from fastapi.responses import JSONResponse
 import selfarxiv
 import redis
 import os
-import time
 import uvicorn
 import requests
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +60,7 @@ counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
 user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
 idea_db = redis.Redis(host=redis_server, port=redis_port, db=2) # hash
 suggest_db = redis.Redis(host=redis_server, port=redis_port, db=3) # hash
+paper_sketch_db = redis.Redis(host=redis_server, port=redis_port, db=4) # hash
 
 app = FastAPI()
 
@@ -281,6 +280,22 @@ async def generate_paper_sketch(data:dict):
     structured_llm = chat.with_structured_output(Sketch)
     out_put = structured_llm.invoke(f"suggest title: {suggest_title}\n\nsuggest {suggest}\n\nsuggest detail {suggest_detail} Based on these, generate research questions, hypotheses, and objectives.")
     return out_put
+
+@app.post("/save_paper_sketch")
+async def save_paper_sketch(data:dict):
+    """
+    A function that handles the save_paper_sketch endpoint.
+
+    Args:
+
+    Returns:
+    """
+    research_questions = data["Research_questions"]
+    hypotheses = data["Hypotheses"]
+    objectives_sketches = data["Objectives_sketches"]
+    paper_sketch_id = counter_db.incr("paper_sketch_counter")
+    paper_sketch_db.hmset(paper_sketch_id, {"research_questions": research_questions, "hypotheses": hypotheses, "objectives_sketches": objectives_sketches})
+    return {"status": "Paper Sketch saved"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

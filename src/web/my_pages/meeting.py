@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import time
 import os
 
 BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
@@ -131,11 +130,6 @@ if st.session_state.login:
 
         if selected_suggestion:
             suggestion = [suggestions[key] for key in suggestions.keys() if suggestions[key]['suggestion_title'] == selected_suggestion][0]
-            # preview_card = st.container(border=True)
-            # with preview_card:
-            #     st.markdown(f'### Suggestion Title:\n{suggestion["suggestion_title"]}')
-            #     st.markdown(f'### Suggestion:\n{suggestion["suggestion"]}')
-            #     st.markdown(f'### Suggestion Detail:\n{suggestion["suggestion_detail"]}')
             with st.form('generate_paper_sketch'):
                 edit_title = st.text_input('Title', value=suggestion['suggestion_title'], key='edit_title')
                 edit_suggestion = st.text_area('Suggestion', value=suggestion['suggestion'], key='edit_suggestion')

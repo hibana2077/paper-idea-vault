@@ -84,7 +84,8 @@ if st.session_state.login:
                 suggested_topics = suggest_paper_topic(related_work_from_session[:5], st.session_state.LLM_API_TOKEN)
                 st.markdown('### Suggested Topics')
                 for topic in suggested_topics:
-                    st.markdown(f'- {topic}')
+                    with st.expander(f'Topic {topic["suggestion"]}'):
+                        st.markdown(f'{topic["suggestion_detail"]}')
 
 
     with tab_paper_sketch:

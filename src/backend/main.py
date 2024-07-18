@@ -26,8 +26,11 @@ class Suggestions(BaseModel):
 
     # suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
     seggestion_A: str = Field(description="The suggestion of new paper topic A from the related work")
+    seggestion_A_detail: str = Field(description="The suggestion of new paper topic A detail from the related work")
     seggestion_B: str = Field(description="The suggestion of new paper topic B from the related work")
+    seggestion_B_detail: str = Field(description="The suggestion of new paper topic B detail from the related work")
     seggestion_C: str = Field(description="The suggestion of new paper topic C from the related work")
+    seggestion_C_detail: str = Field(description="The suggestion of new paper topic C detail from the related work")
 
 class RelatedWork(BaseModel):
 
@@ -200,9 +203,9 @@ async def suggest_topic(data:dict):
     structured_llm = chat.with_structured_output(Suggestions)
     out_put = structured_llm.invoke(f"Generate a new paper topic based on the related works of a paper and must be new topic. Related works: {related_works_str}")
     print(f"Function name: suggest_topic, out_put: {out_put}")
-    return_data.append(str(out_put.seggestion_A))
-    return_data.append(str(out_put.seggestion_B))
-    return_data.append(str(out_put.seggestion_C))
+    return_data.append({"suggestion": str(out_put.seggestion_A), "suggestion_detail": str(out_put.seggestion_A_detail)})
+    return_data.append({"suggestion": str(out_put.seggestion_B), "suggestion_detail": str(out_put.seggestion_B_detail)})
+    return_data.append({"suggestion": str(out_put.seggestion_C), "suggestion_detail": str(out_put.seggestion_C_detail)})
     return {"suggestions": return_data}
 
 if __name__ == "__main__":

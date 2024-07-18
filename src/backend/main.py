@@ -25,10 +25,13 @@ HOST = os.getenv("HOST", "127.0.0.1")
 class Suggestions(BaseModel):
 
     # suggestions: list[Suggestion] = Field(description="The suggestions of new paper topics from the related work")
+    seggestion_A_title: str = Field(description="The title of the suggestion of new paper topic A from the related work")
     seggestion_A: str = Field(description="The suggestion of new paper topic A from the related work")
     seggestion_A_detail: str = Field(description="The suggestion of new paper topic A detail from the related work")
+    seggestion_B_title: str = Field(description="The title of the suggestion of new paper topic B from the related work")
     seggestion_B: str = Field(description="The suggestion of new paper topic B from the related work")
     seggestion_B_detail: str = Field(description="The suggestion of new paper topic B detail from the related work")
+    seggestion_C_title: str = Field(description="The title of the suggestion of new paper topic C from the related work")
     seggestion_C: str = Field(description="The suggestion of new paper topic C from the related work")
     seggestion_C_detail: str = Field(description="The suggestion of new paper topic C detail from the related work")
 
@@ -43,6 +46,7 @@ class Keywords(BaseModel):
 counter_db = redis.Redis(host=redis_server, port=redis_port, db=0) # string
 user_rec_db = redis.Redis(host=redis_server, port=redis_port, db=1) # hash
 idea_db = redis.Redis(host=redis_server, port=redis_port, db=2) # hash
+suggest_db = redis.Redis(host=redis_server, port=redis_port, db=3) # hash
 
 app = FastAPI()
 
@@ -54,11 +58,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # pull model from ollama
-    _ = requests.post(f"{ollama_server}/api/pull", json={"name": "nomic-embed-text"})
-    _ = requests.post(f"{ollama_server}/api/pull", json={"name": "jina/jina-embeddings-v2-snall-en"})
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     _ = requests.post(f"{ollama_server}/api/pull", json={"name": "nomic-embed-text"})
+#     _ = requests.post(f"{ollama_server}/api/pull", json={"name": "jina/jina-embeddings-v2-snall-en"})
 
 @app.get("/")
 def read_root():
@@ -203,10 +206,43 @@ async def suggest_topic(data:dict):
     structured_llm = chat.with_structured_output(Suggestions)
     out_put = structured_llm.invoke(f"Generate a new paper topic based on the related works of a paper and must be new topic. Related works: {related_works_str}")
     print(f"Function name: suggest_topic, out_put: {out_put}")
-    return_data.append({"suggestion": str(out_put.seggestion_A), "suggestion_detail": str(out_put.seggestion_A_detail)})
-    return_data.append({"suggestion": str(out_put.seggestion_B), "suggestion_detail": str(out_put.seggestion_B_detail)})
-    return_data.append({"suggestion": str(out_put.seggestion_C), "suggestion_detail": str(out_put.seggestion_C_detail)})
+    return_data.append({"suggestion": str(out_put.seggestion_A), "suggestion_detail": str(out_put.seggestion_A_detail), "suggestion_title": str(out_put.seggestion_A_title)})
+    return_data.append({"suggestion": str(out_put.seggestion_B), "suggestion_detail": str(out_put.seggestion_B_detail), "suggestion_title": str(out_put.seggestion_B_title)})
+    return_data.append({"suggestion": str(out_put.seggestion_C), "suggestion_detail": str(out_put.seggestion_C_detail), "suggestion_title": str(out_put.seggestion_C_title)})
     return {"suggestions": return_data}
+
+@app.post("/save_suggestion")
+async def save_suggestion(data:dict):
+    """
+    A function that handles the save_suggestion endpoint.
+
+    Args:
+        suggestion (str): The suggestion of new paper topic.
+        suggestion_detail (str): The suggestion of new paper topic detail.
+        suggestion_title (str): The title of the suggestion of new paper topic.
+
+    Returns:
+        dict: A dictionary with the message "Suggestion saved".
+    """
+    suggestion = data["suggestion"]
+    suggestion_detail = data["suggestion_detail"]
+    suggestion_title = data["suggestion_title"]
+    suggestion_id = counter_db.incr("suggestion_counter")
+    suggest_db.hmset(suggestion_id, {"suggestion": suggestion, "suggestion_detail": suggestion_detail, "suggestion_title": suggestion_title})
+    return {"status": "Suggestion saved"}
+
+@app.get("/suggestions")
+async def get_suggestions():
+    """
+    A function that handles the suggestions endpoint.
+
+    Returns:
+        dict: A dictionary with the suggestions.
+    """
+    suggestions = {}
+    for key in suggest_db.keys():
+        suggestions[key] = suggest_db.hgetall(key)
+    return {"suggestions": suggestions}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

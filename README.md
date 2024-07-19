@@ -70,6 +70,18 @@ A small tool that can help computer scientists, researchers, and students to bra
 
 2. Enter your username and password to log in.
 
+3. Go to Navigation > Idea to create a new idea.
+
+4. Fill in the details for your idea, such as the title, description, and Tags.
+
+5. Click on the "Save" button to save your idea.
+
+6. Go to Navigation > Meeting to get further research topics or formulating research questions, hypotheses, and objectives or designing experimental goals and methods.
+
+## Demo
+
+![Demo](./demo_data/demo_gif/Idea%20-%20Google%20Chrome%202024-07-19%2017-17-52.gif)
+
 ## Contributing
 
 ### Reporting Bugs

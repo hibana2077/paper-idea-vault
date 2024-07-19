@@ -1,3 +1,3 @@
 # paper idea vault
 
-Small tool for myself to storage idea of papers
+A small tool that can help computer scientists, researchers, and students to brainstorm and further develop research ideas.

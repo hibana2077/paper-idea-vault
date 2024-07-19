@@ -21,9 +21,10 @@ A small tool that can help computer scientists, researchers, and students to bra
 
 ## Tech Stack
 
-<p align="center">
-    <img src="https://skillicons.dev/icons?i=py,docker,fastapi,redis" /><br>
-</p>
+- **Frontend**: Streamlit
+- **Backend**: FastAPI
+- **Database**: Redis
+- **MISC**: Docker, Langchain
 
 ## Installation
 

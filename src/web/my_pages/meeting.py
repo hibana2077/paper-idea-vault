@@ -1,8 +1,15 @@
 import streamlit as st
+import json
 import requests
 import os
 
 BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
+
+def generate_experiment_design(paper_sketch_dict:dict, api_key:str, use_openai:bool)->dict:
+    response = requests.post(f'http://{BACKEND_URL}/generate_experiment_design', json={'paper_sketch': paper_sketch_dict, 'api_key': api_key, 'use_openai': use_openai})
+    if response.status_code == 200:
+        return response.json()
+    return {"error": "Failed to generate experiment design"}
 
 def get_all_paper_sketches()->dict:
     response = requests.get(f'http://{BACKEND_URL}/paper_sketches')
@@ -174,5 +181,24 @@ if st.session_state.login:
             paper_sketch = paper_sketches[selected_paper_sketch]
             st.json(paper_sketch)
             st.session_state.selected_paper_sketch_dict = paper_sketch
+
+        if 'selected_paper_sketch_dict' in st.session_state:
+            st.markdown('### Design Experiment')
+            with st.form('Generate Experiment Design'):
+                edit_paper_sketch = st.text_area('Paper Sketch', value=json.dumps(st.session_state.selected_paper_sketch_dict), key='edit_paper_sketch')
+                use_openai = st.checkbox('Use OpenAI', key='use_openai', value=False)
+                if st.form_submit_button('Generate Experiment Design'):
+                    edit_paper_sketch_dict = json.loads(edit_paper_sketch)
+                    # st.session_state.generated_experiment_design = generate_experiment_design(edit_paper_sketch_dict, st.session_state.LLM_API_TOKEN) if not use_openai else generate_experiment_design(edit_paper_sketch_dict, st.session_state.OPENAI_API_TOKEN)
+                    if not use_openai:
+                        st.session_state.generated_experiment_design = generate_experiment_design(edit_paper_sketch_dict, st.session_state.LLM_API_TOKEN, False)
+                    else:
+                        st.session_state.generated_experiment_design = generate_experiment_design(edit_paper_sketch_dict, st.session_state.OPENAI_API_TOKEN, True)
+                    st.success('Experiment Design generated')
+
+        if 'generated_experiment_design' in st.session_state:
+            generated_experiment_design = st.session_state.generated_experiment_design
+            st.json(generated_experiment_design)
+
 else:
     st.write('Please login first')

@@ -13,6 +13,7 @@ services:
       LLM_PROVIDER: groq # or "ollama"
       LLM_MODEL: gemma2-9b-it # if LLM_PROVIDER is "ollama" then this should be the model name that available in the Ollama server
       LLM_API_TOKEN: "your-api-token-here"
+      OPENAI_API_TOKEN: "your-api-token-here"
     depends_on:
       - backend
     networks:

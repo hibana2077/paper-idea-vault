@@ -8,6 +8,7 @@ BACKEND_SERVER = os.getenv('BACKEND_SERVER', 'http://localhost:8081')
 LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'groq')
 LLM_MODEL = os.getenv('LLM_MODEL', 'gemma2-9b-it')
 LLM_API_TOKEN = os.getenv('LLM_API_TOKEN', 'null')
+OPENAI_API_TOKEN = os.getenv('OPENAI_API_TOKEN', 'null')
 
 pg = st.navigation(
     [
@@ -28,6 +29,9 @@ if "LLM_MODEL" not in st.session_state:
 
 if "LLM_API_TOKEN" not in st.session_state:
     st.session_state.LLM_API_TOKEN = LLM_API_TOKEN
+
+if "OPENAI_API_TOKEN" not in st.session_state:
+    st.session_state.OPENAI_API_TOKEN = OPENAI_API_TOKEN
 
 if st.session_state.login:
     pg.run()

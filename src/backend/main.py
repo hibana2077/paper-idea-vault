@@ -341,10 +341,10 @@ async def get_paper_sketch(paper_sketch_id:int):
     """
     return paper_sketch_db.hgetall(paper_sketch_id)
 
-@app.post("/generate_experiment_sketch")
-async def generate_experiment_sketch(data:dict):
+@app.post("/generate_experiment_design")
+async def generate_experiment_design(data:dict):
     """
-    A function that handles the generate_experiment_sketch endpoint.
+    A function that handles the generate_experiment_design endpoint.
 
     Args:
     """
@@ -353,11 +353,22 @@ async def generate_experiment_sketch(data:dict):
     hypotheses = paper_sketch['hypotheses']
     objectives_sketches = paper_sketch['objectives_sketches']
     api_key = data["api_key"]
-    chat = ChatGroq(
-        temperature=0,
-        model="llama3-70b-8192",
-        groq_api_key=api_key
-    )# chat gpt maybe better
+    use_openai = data["use_openai"]
+    if not use_openai:
+        # gemma2 9b can't handle the structured output
+        chat = ChatGroq(
+            temperature=0,
+            model="mixtral-8x7b-32768",
+            # model="llaama3-70b-8192",
+            groq_api_key=api_key
+        )
+    else:
+        from langchain_openai import ChatOpenAI
+        chat = ChatOpenAI(
+            temperature=0,
+            model="gpt-4-turbo",
+            openai_api_key=api_key
+        )
     research_questions_str = "\n- ".join(research_questions)
     hypotheses_str = "\n- ".join(hypotheses)
     objectives_sketches_str = "\n- ".join(objectives_sketches)

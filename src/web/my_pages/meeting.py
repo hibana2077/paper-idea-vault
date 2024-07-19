@@ -4,6 +4,12 @@ import os
 
 BACKEND_URL = os.getenv('BACKEND_SERVER', 'localhost:8081')
 
+def get_all_paper_sketches()->dict:
+    response = requests.get(f'http://{BACKEND_URL}/paper_sketches')
+    if response.status_code == 200:
+        return response.json()['paper_sketches']
+    return {}
+
 def save_paper_sketch(paper_sketch)->bool:
     response = requests.post(f'http://{BACKEND_URL}/save_paper_sketch', json={'paper_sketch': paper_sketch})
     if response.status_code == 200:
@@ -160,5 +166,13 @@ if st.session_state.login:
     with tab_exp_design:
         st.subheader('Experiment Design')
 
+        # List all saved paper sketches
+        paper_sketches = get_all_paper_sketches()
+        selected_paper_sketch = st.selectbox('Select Paper Sketch', paper_sketches.keys(), key='selected_paper_sketch')
+
+        if selected_paper_sketch:
+            paper_sketch = paper_sketches[selected_paper_sketch]
+            st.json(paper_sketch)
+            st.session_state.selected_paper_sketch_dict = paper_sketch
 else:
     st.write('Please login first')

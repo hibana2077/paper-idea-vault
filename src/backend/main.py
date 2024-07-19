@@ -20,6 +20,20 @@ redis_port = os.getenv("REDIS_PORT", 6379)
 HOST = os.getenv("HOST", "127.0.0.1")
 # embeddings = OllamaEmbeddings(base_url=ollama_server)
 
+class ExpMethod(BaseModel):
+    exp_method: str = Field(description="Describes the specific procedures and techniques used in the experiment to achieve the objectives. This includes the experimental setup, the data collection methods, and the analytical techniques used.")
+
+class ExpMerits(BaseModel):
+    exp_merits: str = Field(description="Highlights the benefits and advantages of the experimental approach, including how it contributes to the field of study, its efficacy in addressing the research question, and its potential for broader impact.")
+
+class Experiment(BaseModel):
+    exp_objective: str = Field(description="Defines the primary goal or outcome the experiment seeks to achieve. It specifies what question the experiment aims to answer, which hypothesis it intends to test, or what effect it aims to measure.")
+    exp_method: list[ExpMethod] = Field(description="list of the experimental methods")
+    exp_merits: list[ExpMerits] = Field(description="list of the experimental merits")
+
+class ExperimentSketch(BaseModel):
+    experiments: list[Experiment] = Field(description="The experiments")
+
 class ResearchQuestion(BaseModel):
     research_question: str = Field(description="The research question")
 
@@ -298,8 +312,58 @@ async def save_paper_sketch(data:dict):
     hypotheses_str = "<block>".join([hypothesis['hypothesis'] for hypothesis in hypotheses])
     objectives_sketches_str = "<block>".join([objectives_sketch['objectives_sketch'] for objectives_sketch in objectives_sketches])
     paper_sketch_id = counter_db.incr("paper_sketch_counter")
-    paper_sketch_db.hset(paper_sketch_id, {"research_questions": research_questions_str, "hypotheses": hypotheses_str, "objectives_sketches": objectives_sketches_str})
+    paper_sketch_db.hset(paper_sketch_id, mapping={"research_questions": research_questions_str, "hypotheses": hypotheses_str, "objectives_sketches": objectives_sketches_str})
     return {"status": "Paper sketch saved"}
+
+@app.get("/paper_sketches")
+async def get_paper_sketches():
+    """
+    A function that handles the paper_sketches endpoint.
+
+    Returns:
+    """
+    paper_sketches = {}
+    for key in paper_sketch_db.keys():
+        temp_dict = paper_sketch_db.hgetall(key)
+        new_dict = {}
+        new_dict["research_questions"] = temp_dict[b"research_questions"].decode('utf-8').split("<block>")
+        new_dict["hypotheses"] = temp_dict[b"hypotheses"].decode('utf-8').split("<block>")
+        new_dict["objectives_sketches"] = temp_dict[b"objectives_sketches"].decode('utf-8').split("<block>")
+        paper_sketches[key] = new_dict
+    return {"paper_sketches": paper_sketches}
+
+@app.get("/paper_sketch/{paper_sketch_id}")
+async def get_paper_sketch(paper_sketch_id:int):
+    """
+    A function that handles the paper_sketch endpoint.
+
+    Args:
+    """
+    return paper_sketch_db.hgetall(paper_sketch_id)
+
+@app.post("/generate_experiment_sketch")
+async def generate_experiment_sketch(data:dict):
+    """
+    A function that handles the generate_experiment_sketch endpoint.
+
+    Args:
+    """
+    paper_sketch = data["paper_sketch"]
+    research_questions = paper_sketch['research_questions']
+    hypotheses = paper_sketch['hypotheses']
+    objectives_sketches = paper_sketch['objectives_sketches']
+    api_key = data["api_key"]
+    chat = ChatGroq(
+        temperature=0,
+        model="llama3-70b-8192",
+        groq_api_key=api_key
+    )# chat gpt maybe better
+    research_questions_str = "\n- ".join(research_questions)
+    hypotheses_str = "\n- ".join(hypotheses)
+    objectives_sketches_str = "\n- ".join(objectives_sketches)
+    structured_llm = chat.with_structured_output(ExperimentSketch)
+    out_put = structured_llm.invoke(f"Research questions:\n- {research_questions_str}\n\nHypotheses:\n- {hypotheses_str}\n\nObjectives:\n- {objectives_sketches_str}\n\nBased on these, design the experiment.")
+    return out_put
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=8081) # In docker need to change to 0.0.0.0

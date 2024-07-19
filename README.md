@@ -66,11 +66,11 @@ A small tool that can help computer scientists, researchers, and students to bra
 
 ## Usage
 
-## Demo
+1. Open the application in your browser.
+
+2. Enter your username and password to log in.
 
 ## Contributing
-
-Thank you for your interest in contributing to the Paper Idea Vault! We welcome contributions from everyone, whether it's code, documentation, bug reports, or feature requests. Here's how you can contribute:
 
 ### Reporting Bugs
 

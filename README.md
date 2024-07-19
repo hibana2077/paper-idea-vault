@@ -80,7 +80,7 @@ A small tool that can help computer scientists, researchers, and students to bra
 
 ## Demo
 
-![Demo](./demo_data/demo_gif/demo_video.gif)
+![Demo](./demo_data/demo_gif/demo_video_large.gif)
 
 ## Contributing
 

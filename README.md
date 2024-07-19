@@ -26,6 +26,11 @@ A small tool that can help computer scientists, researchers, and students to bra
 - **Database**: Redis
 - **MISC**: Docker, Langchain
 
+## Roadmap
+
+- [X] Basic implementation of the application.
+- [ ] Add ollama as a language model provider.
+
 ## Installation
 
 ### Prerequisites

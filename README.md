@@ -1,4 +1,4 @@
-# paper idea vault
+# Paper Idea Vault
 
 <p align="center">
   <img src="https://img.shields.io/github/license/hibana2077/paper-idea-vault" alt="License">

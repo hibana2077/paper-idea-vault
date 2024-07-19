@@ -27,6 +27,36 @@ A small tool that can help computer scientists, researchers, and students to bra
 - Groq API key
 - OpenAI API key (optional)
 
+### Steps
+
+1. Clone the repository.
+
+    ```bash
+    git clone https://github.com/hibana2077/paper-idea-vault.git
+    cd paper-idea-vault/src
+    ```
+
+2. Edit the `docker-compose.yml` file and replace the placeholder values with your API keys and username and password for the application authentication.
+
+    ```yaml
+    environment:
+        USER: "admin"
+        PASSWORD: "admin"
+        BACKEND_SERVER: "backend:8081"
+        LLM_PROVIDER: groq
+        LLM_MODEL: gemma2-9b-it
+        LLM_API_TOKEN: "your-api-token-here"
+        OPENAI_API_TOKEN: "your-api-token-here"
+    ```
+
+3. Build and run the application.
+
+    ```bash
+    docker-compose up -d
+    ```
+
+4. Access the application at `http://localhost:80`.
+
 ## Usage
 
 ## Demo

@@ -36,6 +36,7 @@ if "OPENAI_API_TOKEN" not in st.session_state:
 if st.session_state.login:
     pg.run()
 else:
+    st.title('Login')
     with st.form(key='login_form'):
         username = st.text_input('Username')
         password = st.text_input('Password', type='password')

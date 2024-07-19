@@ -80,7 +80,7 @@ A small tool that can help computer scientists, researchers, and students to bra
 
 ## Demo
 
-![Demo](./demo_data/demo_gif/Idea%20-%20Google%20Chrome%202024-07-19%2017-17-52.gif)
+![Demo](./demo_data/demo_gif/demo_video.gif)
 
 ## Contributing
 

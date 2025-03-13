@@ -225,7 +225,7 @@ async def suggest_topic(data:dict):
     related_works = data["related_works"]
     chat = ChatGroq(
         temperature=0,
-        model="mixtral-8x7b-32768",
+        model="deepseek-r1-distill-llama-70b",
         groq_api_key=api_key # Optional if not set as an environment variable
     )
 
@@ -287,7 +287,7 @@ async def generate_paper_sketch(data:dict):
     api_key = data["api_key"]
     chat = ChatGroq(
         temperature=0,
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
         groq_api_key=api_key
     )
 
@@ -358,9 +358,9 @@ async def generate_experiment_design(data:dict):
         # gemma2 9b can't handle the structured output
         chat = ChatGroq(
             temperature=0,
-            model="llama-3.1-70b-versatile",
+            model="qwen-qwq-32b",
             # model="mixtral-8x7b-32768",
-            # model="llaama3-70b-8192",
+            # model="llama-3.3-70b-versatile",
             groq_api_key=api_key
         )
     else:
